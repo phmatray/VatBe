@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>vatbe-demo</AssemblyName>
+    <RootNamespace>VatBe.Demo</RootNamespace>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\VatBe\VatBe.csproj" />
+  </ItemGroup>
+
+</Project>

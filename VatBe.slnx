@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VatBe/VatBe.csproj" />
+  </Folder>
+  <Folder Name="/web/">
+    <Project Path="web/VatBe.Web/VatBe.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VatBe.Tests/VatBe.Tests.csproj" />
+  </Folder>
+  <Folder Name="/demo/">
+    <Project Path="demo/VatBe.Demo/VatBe.Demo.csproj" />
+  </Folder>
+</Solution>

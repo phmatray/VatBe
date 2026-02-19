@@ -1,0 +1,288 @@
+@page "/"
+@using VatBe.Models
+@using VatBe.Vies
+@inject IViesClient ViesClient
+
+<PageTitle>VatBe — Belgian VAT Checker</PageTitle>
+
+<div class="hero">
+    <div class="hero-icon">🇧🇪</div>
+    <h1 class="hero-title">Vat<span class="accent">Be</span></h1>
+    <p class="hero-subtitle">
+        Validate Belgian enterprise numbers (KBO/BCE) and EU VAT numbers in real time via VIES.
+    </p>
+</div>
+
+<div class="checker-card">
+    <div class="mode-tabs">
+        <button class="@TabClass(CheckMode.Belgian)" @onclick="SetBelgianMode">
+            🇧🇪 Belgian (KBO/BCE)
+        </button>
+        <button class="@TabClass(CheckMode.EU)" @onclick="SetEuMode">
+            🇪🇺 EU VAT
+        </button>
+    </div>
+
+    <div class="input-row">
+        @if (Mode == CheckMode.EU)
+        {
+            <select class="country-select" @bind="SelectedCountry">
+                @foreach (var country in EuCountries)
+                {
+                    <option value="@country.Code">@country.Code — @country.Name</option>
+                }
+            </select>
+        }
+
+        <input class="vat-input"
+               type="text"
+               placeholder="@Placeholder"
+               @bind="InputValue"
+               @bind:event="oninput"
+               @onkeydown="OnKeyDown" />
+
+        <button class="btn-check" @onclick="CheckAsync" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <span class="spinner"></span>
+            }
+            else
+            {
+                <span>Vérifier</span>
+            }
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ValidationError))
+    {
+        <div class="inline-error">⚠️ @ValidationError</div>
+    }
+</div>
+
+@if (Result is not null || LocalResult is not null)
+{
+    <div class="@ResultCardClass">
+        <div class="result-header">
+            <span class="result-icon">@ResultIcon</span>
+            <div>
+                <div class="result-status">@ResultLabel</div>
+                <div class="result-number">@ResultNumber</div>
+            </div>
+        </div>
+
+        @if (LocalResult is not null)
+        {
+            <div class="result-section">
+                <div class="result-row">
+                    <span class="result-label">Format entreprise</span>
+                    <span class="result-value">@LocalResult.EnterpriseFormat</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Numéro TVA (BTW/TVA)</span>
+                    <span class="result-value">@LocalResult.VatFormat</span>
+                </div>
+            </div>
+        }
+
+        @if (Result is not null)
+        {
+            <div class="result-section">
+                <div class="section-title">VIES</div>
+                @if (!string.IsNullOrWhiteSpace(Result.TraderName))
+                {
+                    <div class="result-row">
+                        <span class="result-label">Nom</span>
+                        <span class="result-value">@Result.TraderName</span>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Result.TraderAddress))
+                {
+                    <div class="result-row">
+                        <span class="result-label">Adresse</span>
+                        <span class="result-value address">@Result.TraderAddress</span>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Result.Error))
+                {
+                    <div class="result-row error-row">
+                        <span class="result-label">Erreur VIES</span>
+                        <span class="result-value">@Result.Error</span>
+                    </div>
+                }
+                <div class="result-row">
+                    <span class="result-label">Vérifié le</span>
+                    <span class="result-value">@Result.ValidatedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="examples">
+    <span class="examples-label">Exemples :</span>
+    @foreach (var ex in Examples)
+    {
+        var captured = ex;
+        <button class="example-btn" @onclick="@(EventCallback.Factory.Create(this, () => UseExample(captured)))">@captured</button>
+    }
+</div>
+
+@code {
+    private enum CheckMode { Belgian, EU }
+
+    private CheckMode Mode = CheckMode.Belgian;
+    private string InputValue = string.Empty;
+    private string SelectedCountry = "DE";
+    private bool IsLoading = false;
+    private string? ValidationError = null;
+
+    private ViesResult? Result = null;
+
+    private record LocalValidation(string EnterpriseFormat, string VatFormat);
+    private LocalValidation? LocalResult = null;
+
+    private string TabClass(CheckMode m) => m == Mode ? "tab active" : "tab";
+
+    private string Placeholder => Mode == CheckMode.Belgian
+        ? "Ex : 0477.472.701 ou BE0477472701"
+        : "Ex : 123456789 (sans code pays)";
+
+    private bool IsValid => (Result?.IsValid == true) ||
+                            (LocalResult is not null && Result is null && Mode == CheckMode.Belgian);
+
+    private string ResultIcon => IsValid ? "✅" : "❌";
+
+    private string ResultCardClass => IsValid ? "result-card valid" : "result-card invalid";
+
+    private string ResultLabel
+    {
+        get
+        {
+            if (Mode == CheckMode.Belgian && LocalResult is not null && Result is null)
+                return "Format valide (KBO local)";
+            if (Result?.IsValid == true) return "Valide — VIES confirmé ✓";
+            if (Result?.IsValid == false) return "Invalide ou inconnu";
+            return "Résultat";
+        }
+    }
+
+    private string ResultNumber
+    {
+        get
+        {
+            if (LocalResult is not null) return LocalResult.VatFormat;
+            if (Result is not null) return $"{Result.CountryCode} {Result.VatNumber}";
+            return string.Empty;
+        }
+    }
+
+    private List<string> Examples => Mode == CheckMode.Belgian
+        ? ["0477.472.701", "BE0477472701", "0200.068.636"]
+        : ["123456789", "809445978", "260325142"];
+
+    private record EuCountry(string Code, string Name);
+
+    private static readonly EuCountry[] EuCountries =
+    [
+        new("AT", "Autriche"), new("BE", "Belgique"), new("BG", "Bulgarie"),
+        new("CY", "Chypre"), new("CZ", "Tcheque"), new("DE", "Allemagne"),
+        new("DK", "Danemark"), new("EE", "Estonie"), new("EL", "Grece"),
+        new("ES", "Espagne"), new("FI", "Finlande"), new("FR", "France"),
+        new("HR", "Croatie"), new("HU", "Hongrie"), new("IE", "Irlande"),
+        new("IT", "Italie"), new("LT", "Lituanie"), new("LU", "Luxembourg"),
+        new("LV", "Lettonie"), new("MT", "Malte"), new("NL", "Pays-Bas"),
+        new("PL", "Pologne"), new("PT", "Portugal"), new("RO", "Roumanie"),
+        new("SE", "Suede"), new("SI", "Slovenie"), new("SK", "Slovaquie"),
+    ];
+
+    private void SetBelgianMode() => SetMode(CheckMode.Belgian);
+    private void SetEuMode() => SetMode(CheckMode.EU);
+
+    private void SetMode(CheckMode mode)
+    {
+        Mode = mode;
+        InputValue = string.Empty;
+        ValidationError = null;
+        Result = null;
+        LocalResult = null;
+    }
+
+    private void UseExample(string example)
+    {
+        InputValue = example;
+        ValidationError = null;
+        Result = null;
+        LocalResult = null;
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await CheckAsync();
+    }
+
+    private async Task CheckAsync()
+    {
+        ValidationError = null;
+        Result = null;
+        LocalResult = null;
+
+        var input = InputValue?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            ValidationError = "Veuillez saisir un numéro.";
+            return;
+        }
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            if (Mode == CheckMode.Belgian)
+                await CheckBelgianAsync(input);
+            else
+                await CheckEuAsync(SelectedCountry, input);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task CheckBelgianAsync(string input)
+    {
+        // Local KBO/BCE validation first
+        EnterpriseNumber en;
+
+        if (EnterpriseNumber.TryParse(input, out var parsedEn))
+        {
+            en = parsedEn;
+        }
+        else if (VatNumber.TryParse(input, out var parsedVn))
+        {
+            en = parsedVn.EnterpriseNumber;
+        }
+        else
+        {
+            ValidationError = "Format invalide. Attendu : 0XXX.XXX.XXX ou BE0XXXXXXXXX (modulus 97).";
+            return;
+        }
+
+        var vatNumber = en.ToVatNumber();
+        LocalResult = new LocalValidation(en.ToFormatted(), vatNumber.ToFormatted());
+
+        // VIES lookup
+        Result = await ViesClient.ValidateAsync(vatNumber);
+    }
+
+    private async Task CheckEuAsync(string countryCode, string vatNumber)
+    {
+        if (countryCode == "BE")
+        {
+            await CheckBelgianAsync(vatNumber);
+            return;
+        }
+
+        Result = await ViesClient.ValidateAsync(countryCode, vatNumber);
+    }
+}

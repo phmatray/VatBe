@@ -1,0 +1,28 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+
+## Artifacts
+artifacts/
+*.nupkg
+
+## Env
+.env
+.env.*
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Internal (never push)
+POC.md
+poc-log.json
+memory/
+INBOX.md
+AGENTS.md
+SOUL.md
+IDENTITY.md
