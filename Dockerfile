@@ -12,14 +12,10 @@ RUN dotnet restore web/VatBe.Web/VatBe.Web.csproj
 COPY src/ src/
 COPY web/ web/
 
-RUN dotnet build web/VatBe.Web/VatBe.Web.csproj \
-    --configuration Release \
-    --no-restore
-
 RUN dotnet publish web/VatBe.Web/VatBe.Web.csproj \
     --configuration Release \
     --output /app/publish \
-    --no-build
+    --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
