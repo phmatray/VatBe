@@ -214,6 +214,7 @@ a:hover { text-decoration: underline; }
 
 .result-card.valid { border-color: var(--success); background: linear-gradient(135deg, var(--success-bg), var(--surface)); }
 .result-card.invalid { border-color: var(--danger); background: linear-gradient(135deg, var(--danger-bg), var(--surface)); }
+.result-card.warning { border-color: #f59e0b; background: linear-gradient(135deg, #1a1200, var(--surface)); }
 
 .result-header {
     display: flex;
@@ -237,6 +238,7 @@ a:hover { text-decoration: underline; }
 
 .result-card.valid .result-status { color: var(--success); }
 .result-card.invalid .result-status { color: var(--danger); }
+.result-card.warning .result-status { color: var(--brand-light); }
 
 .result-number {
     font-size: 1.4rem;

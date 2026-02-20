@@ -35,9 +35,14 @@ public sealed class ViesClient(HttpClient httpClient) : IViesClient, IDisposable
 
         try
         {
-            var response = await httpClient.GetFromJsonAsync<ViesApiResponse>(
-                url,
-                cancellationToken: cancellationToken);
+            var httpResponse = await httpClient.GetAsync(url, cancellationToken);
+
+            ViesApiResponse? response = null;
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                response = await httpResponse.Content.ReadFromJsonAsync<ViesApiResponse>(
+                    cancellationToken: cancellationToken);
+            }
 
             if (response is null)
             {
@@ -47,9 +52,14 @@ public sealed class ViesClient(HttpClient httpClient) : IViesClient, IDisposable
                     CountryCode = countryCode,
                     VatNumber = vatNumber,
                     ValidatedAt = DateTimeOffset.UtcNow,
-                    Error = "Empty response from VIES",
+                    Error = httpResponse.IsSuccessStatusCode
+                        ? "Empty response from VIES"
+                        : $"VIES service error: HTTP {(int)httpResponse.StatusCode}",
                 };
             }
+
+            // Map userError from VIES (e.g. MS_UNAVAILABLE, INVALID_INPUT, SERVICE_UNAVAILABLE)
+            var userError = NullIfUnknown(response.UserError);
 
             return new ViesResult
             {
@@ -60,6 +70,7 @@ public sealed class ViesClient(HttpClient httpClient) : IViesClient, IDisposable
                 TraderAddress = NullIfUnknown(response.Address),
                 ValidatedAt = DateTimeOffset.UtcNow,
                 RequestIdentifier = response.RequestIdentifier,
+                Error = userError,
             };
         }
         catch (HttpRequestException ex)
@@ -100,6 +111,7 @@ public sealed class ViesClient(HttpClient httpClient) : IViesClient, IDisposable
         [JsonPropertyName("requestDate")]
         public string? RequestDate { get; set; }
 
+        /// <summary>VIES user-level error code (e.g. MS_UNAVAILABLE, INVALID_INPUT, SERVICE_UNAVAILABLE).</summary>
         [JsonPropertyName("userError")]
         public string? UserError { get; set; }
 
