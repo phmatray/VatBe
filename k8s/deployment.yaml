@@ -54,5 +54,6 @@ spec:
               mountPath: /var/lib/dataprotection
       volumes:
         - name: dataprotection
-          persistentVolumeClaim:
-            claimName: vatbe-dataprotection
+          hostPath:
+            path: /var/lib/vatbe/dataprotection
+            type: DirectoryOrCreate
