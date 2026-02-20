@@ -130,6 +130,9 @@
 @code {
     private enum CheckMode { Belgian, EU }
 
+    // Validation state for Belgian mode: local format is valid, VIES confirmed, or VIES issue
+    private enum BelgianViesState { None, Confirmed, NotFound, Error }
+
     private CheckMode Mode = CheckMode.Belgian;
     private string InputValue = string.Empty;
     private string SelectedCountry = "DE";
@@ -147,21 +150,61 @@
         ? "Ex : 0477.472.701 ou BE0477472701"
         : "Ex : 123456789 (sans code pays)";
 
-    private bool IsValid => (Result?.IsValid == true) ||
-                            (LocalResult is not null && Result is null && Mode == CheckMode.Belgian);
+    /// <summary>
+    /// Determines the overall validity state:
+    /// - True if VIES confirms valid
+    /// - "Warning" if local format is valid but VIES returned an error or couldn't confirm
+    /// - False if format is invalid or VIES explicitly says invalid with no error
+    /// </summary>
+    private bool IsViesValid => Result?.IsValid == true;
 
-    private string ResultIcon => IsValid ? "✅" : "❌";
+    /// <summary>
+    /// True when local format is valid but VIES couldn't confirm (service error, MS unavailable, etc.)
+    /// This is a "warning" state — not full green, not full red.
+    /// </summary>
+    private bool IsWarning =>
+        Mode == CheckMode.Belgian &&
+        LocalResult is not null &&
+        Result is not null &&
+        !Result.IsValid &&
+        !string.IsNullOrWhiteSpace(Result.Error);
 
-    private string ResultCardClass => IsValid ? "result-card valid" : "result-card invalid";
+    private bool IsValid => IsViesValid || (Mode == CheckMode.Belgian && LocalResult is not null && Result is null);
+
+    private string ResultIcon => IsViesValid ? "✅" : IsWarning ? "⚠️" : "❌";
+
+    private string ResultCardClass =>
+        IsViesValid ? "result-card valid" :
+        IsWarning   ? "result-card warning" :
+                      "result-card invalid";
 
     private string ResultLabel
     {
         get
         {
+            // Belgian mode: local-only result (before VIES returns)
             if (Mode == CheckMode.Belgian && LocalResult is not null && Result is null)
                 return "Format valide (KBO local)";
+
+            // VIES confirmed valid
             if (Result?.IsValid == true) return "Valide — VIES confirmé ✓";
-            if (Result?.IsValid == false) return "Invalide ou inconnu";
+
+            // Belgian mode: local format valid, but VIES service error / member state unavailable
+            if (Mode == CheckMode.Belgian && LocalResult is not null && IsWarning)
+                return "Format KBO valide — VIES indisponible";
+
+            // Belgian mode: local format valid, but VIES says not registered
+            if (Mode == CheckMode.Belgian && LocalResult is not null && Result?.IsValid == false)
+                return "Format KBO valide — non enregistré VIES";
+
+            // EU mode or fallback
+            if (Result?.IsValid == false)
+            {
+                if (!string.IsNullOrWhiteSpace(Result.Error))
+                    return "VIES indisponible";
+                return "Invalide ou non enregistré";
+            }
+
             return "Résultat";
         }
     }
@@ -207,12 +250,14 @@
         LocalResult = null;
     }
 
-    private void UseExample(string example)
+    private async Task UseExample(string example)
     {
         InputValue = example;
         ValidationError = null;
         Result = null;
         LocalResult = null;
+        // Auto-validate on example click for immediate feedback
+        await CheckAsync();
     }
 
     private async Task OnKeyDown(KeyboardEventArgs e)
@@ -283,6 +328,28 @@
             return;
         }
 
-        Result = await ViesClient.ValidateAsync(countryCode, vatNumber);
+        // Strip country prefix if the user included it (e.g. "DE123456789" → "123456789")
+        var normalizedVatNumber = StripCountryPrefix(vatNumber, countryCode);
+
+        if (string.IsNullOrWhiteSpace(normalizedVatNumber))
+        {
+            ValidationError = "Numéro TVA vide après suppression du préfixe pays.";
+            return;
+        }
+
+        Result = await ViesClient.ValidateAsync(countryCode, normalizedVatNumber);
+    }
+
+    /// <summary>
+    /// Removes the country code prefix from a VAT number if present.
+    /// E.g. "DE123456789" with countryCode "DE" → "123456789"
+    /// Also handles lowercase and with/without space: "de 123456789" → "123456789"
+    /// </summary>
+    private static string StripCountryPrefix(string input, string countryCode)
+    {
+        var s = input.Trim();
+        if (s.StartsWith(countryCode, StringComparison.OrdinalIgnoreCase))
+            s = s[countryCode.Length..].TrimStart();
+        return s;
     }
 }

@@ -156,6 +156,55 @@ public sealed class ViesClientTests
         result.ValidatedAt.Should().BeOnOrBefore(after);
     }
 
+    [Fact]
+    public async Task ValidateAsync_UserError_MsUnavailable_IsExposedInError()
+    {
+        // VIES returns HTTP 200 with isValid=false and a userError code
+        const string json = """
+            {
+                "isValid": false,
+                "countryCode": "BE",
+                "vatNumber": "0402206045",
+                "userError": "MS_UNAVAILABLE"
+            }
+            """;
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json"),
+        };
+
+        using var client = CreateClient(response);
+        var result = await client.ValidateAsync("BE", "0402206045");
+
+        result.IsValid.Should().BeFalse();
+        result.Error.Should().Be("MS_UNAVAILABLE");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_UserError_InvalidInput_IsExposedInError()
+    {
+        const string json = """
+            {
+                "isValid": false,
+                "countryCode": "DE",
+                "vatNumber": "123456789",
+                "userError": "INVALID_INPUT"
+            }
+            """;
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json"),
+        };
+
+        using var client = CreateClient(response);
+        var result = await client.ValidateAsync("DE", "123456789");
+
+        result.IsValid.Should().BeFalse();
+        result.Error.Should().Be("INVALID_INPUT");
+    }
+
     // --- Helpers ---
 
     private sealed class FakeHttpHandler(HttpResponseMessage response, bool throwNetworkError = false)
