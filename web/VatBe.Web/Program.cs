@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using VatBe;
 using VatBe.Web.Components;
 
