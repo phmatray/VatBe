@@ -1,0 +1,36 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy manifests for restore
+COPY global.json Directory.Packages.props Directory.Build.props ./
+COPY src/VatBe/VatBe.csproj src/VatBe/
+COPY web/VatBe.Web/VatBe.Web.csproj web/VatBe.Web/
+
+RUN dotnet restore web/VatBe.Web/VatBe.Web.csproj
+
+# Copy source
+COPY src/ src/
+COPY web/ web/
+
+RUN dotnet publish web/VatBe.Web/VatBe.Web.csproj \
+    --configuration Release \
+    --output /app/publish \
+    --no-restore \
+    -v detailed 2>&1 | tee /tmp/publish.log
+
+# Debug: show what was published
+RUN ls -laR /app/publish > /tmp/publish-contents.txt
+RUN find /app/publish -type f > /tmp/publish-files.txt
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+COPY --from=build /tmp/publish.log /tmp/
+COPY --from=build /tmp/publish-contents.txt /tmp/
+COPY --from=build /tmp/publish-files.txt /tmp/
+
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "VatBe.Web.dll"]
