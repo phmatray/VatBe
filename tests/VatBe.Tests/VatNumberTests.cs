@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using VatBe.Models;
 using Xunit;
 
@@ -15,9 +15,9 @@ public sealed class VatNumberTests
     {
         var result = VatNumber.TryParse(input, out var vat);
 
-        result.Should().BeTrue();
-        vat.CountryCode.Should().Be("BE");
-        vat.EnterpriseNumber.Digits.Should().Be("0402206045");
+        result.ShouldBeTrue();
+        vat.CountryCode.ShouldBe("BE");
+        vat.EnterpriseNumber.Digits.ShouldBe("0402206045");
     }
 
     [Theory]
@@ -31,50 +31,50 @@ public sealed class VatNumberTests
     public void TryParse_InvalidVatNumbers_ReturnsFalse(string? input)
     {
         var result = VatNumber.TryParse(input, out _);
-        result.Should().BeFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
     public void IsValid_WorksCorrectly()
     {
-        VatNumber.IsValid("BE0402.206.045").Should().BeTrue();
-        VatNumber.IsValid("0402.206.045").Should().BeFalse(); // no BE prefix
-        VatNumber.IsValid(null).Should().BeFalse();
+        VatNumber.IsValid("BE0402.206.045").ShouldBeTrue();
+        VatNumber.IsValid("0402.206.045").ShouldBeFalse(); // no BE prefix
+        VatNumber.IsValid(null).ShouldBeFalse();
     }
 
     [Fact]
     public void ToCompact_ReturnsNoSpaceOrDots()
     {
         var vat = VatNumber.Parse("BE0402.206.045");
-        vat.ToCompact().Should().Be("BE0402206045");
+        vat.ToCompact().ShouldBe("BE0402206045");
     }
 
     [Fact]
     public void ToFormatted_ReturnsReadableFormat()
     {
         var vat = VatNumber.Parse("BE0402206045");
-        vat.ToFormatted().Should().Be("BE 0402.206.045");
+        vat.ToFormatted().ShouldBe("BE 0402.206.045");
     }
 
     [Fact]
     public void ToViesFormat_IsCompact()
     {
         var vat = VatNumber.Parse("BE0402206045");
-        vat.ToViesFormat().Should().Be("BE0402206045");
+        vat.ToViesFormat().ShouldBe("BE0402206045");
     }
 
     [Fact]
     public void ToString_ReturnsFormattedVersion()
     {
         var vat = VatNumber.Parse("BE0402206045");
-        vat.ToString().Should().Be("BE 0402.206.045");
+        vat.ToString().ShouldBe("BE 0402.206.045");
     }
 
     [Fact]
     public void Parse_InvalidInput_ThrowsFormatException()
     {
         var act = () => VatNumber.Parse("not-a-vat-number");
-        act.Should().Throw<FormatException>();
+        Should.Throw<FormatException>(act);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class VatNumberTests
         var vat = en.ToVatNumber();
         var back = vat.EnterpriseNumber;
 
-        back.Should().Be(en);
-        vat.CountryCode.Should().Be("BE");
+        back.ShouldBe(en);
+        vat.CountryCode.ShouldBe("BE");
     }
 }

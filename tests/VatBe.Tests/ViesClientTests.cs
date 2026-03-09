@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using FluentAssertions;
+using Shouldly;
 using Moq;
 using VatBe.Models;
 using VatBe.Vies;
@@ -45,13 +45,13 @@ public sealed class ViesClientTests
 
         var result = await client.ValidateAsync(vat);
 
-        result.IsValid.Should().BeTrue();
-        result.CountryCode.Should().Be("BE");
-        result.VatNumber.Should().Be("0402206045");
-        result.TraderName.Should().Be("Delhaize Group");
-        result.TraderAddress.Should().Contain("Brussels");
-        result.RequestIdentifier.Should().Be("REQ-001");
-        result.Error.Should().BeNull();
+        result.IsValid.ShouldBeTrue();
+        result.CountryCode.ShouldBe("BE");
+        result.VatNumber.ShouldBe("0402206045");
+        result.TraderName.ShouldBe("Delhaize Group");
+        result.TraderAddress.ShouldContain("Brussels");
+        result.RequestIdentifier.ShouldBe("REQ-001");
+        result.Error.ShouldBeNull();
     }
 
     [Fact]
@@ -76,9 +76,9 @@ public sealed class ViesClientTests
 
         var result = await client.ValidateAsync("BE", "9999999999");
 
-        result.IsValid.Should().BeFalse();
-        result.TraderName.Should().BeNull();      // "---" → null
-        result.TraderAddress.Should().BeNull();   // "---" → null
+        result.IsValid.ShouldBeFalse();
+        result.TraderName.ShouldBeNull();      // "---" → null
+        result.TraderAddress.ShouldBeNull();   // "---" → null
     }
 
     [Fact]
@@ -90,9 +90,9 @@ public sealed class ViesClientTests
 
         var result = await client.ValidateAsync("BE", "0402206045");
 
-        result.IsValid.Should().BeFalse();
-        result.Error.Should().NotBeNullOrEmpty();
-        result.Error.Should().Contain("HTTP error");
+        result.IsValid.ShouldBeFalse();
+        result.Error.ShouldNotBeNullOrEmpty();
+        result.Error.ShouldContain("HTTP error");
     }
 
     [Fact]
@@ -107,8 +107,8 @@ public sealed class ViesClientTests
 
         var result = await client.ValidateAsync("BE", "0402206045");
 
-        result.IsValid.Should().BeFalse();
-        result.Error.Should().NotBeNullOrEmpty();
+        result.IsValid.ShouldBeFalse();
+        result.Error.ShouldNotBeNullOrEmpty();
     }
 
     [Fact]
@@ -133,8 +133,8 @@ public sealed class ViesClientTests
 
         var result = await client.ValidateAsync("BE", "0402206045");
 
-        result.TraderName.Should().BeNull();
-        result.TraderAddress.Should().BeNull();
+        result.TraderName.ShouldBeNull();
+        result.TraderAddress.ShouldBeNull();
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public sealed class ViesClientTests
         var result = await client.ValidateAsync("BE", "0402206045");
         var after = DateTimeOffset.UtcNow;
 
-        result.ValidatedAt.Should().BeOnOrAfter(before);
-        result.ValidatedAt.Should().BeOnOrBefore(after);
+        result.ValidatedAt.ShouldBeGreaterThanOrEqualTo(before);
+        result.ValidatedAt.ShouldBeLessThanOrEqualTo(after);
     }
 
     [Fact]
@@ -177,8 +177,8 @@ public sealed class ViesClientTests
         using var client = CreateClient(response);
         var result = await client.ValidateAsync("BE", "0402206045");
 
-        result.IsValid.Should().BeFalse();
-        result.Error.Should().Be("MS_UNAVAILABLE");
+        result.IsValid.ShouldBeFalse();
+        result.Error.ShouldBe("MS_UNAVAILABLE");
     }
 
     [Fact]
@@ -201,8 +201,8 @@ public sealed class ViesClientTests
         using var client = CreateClient(response);
         var result = await client.ValidateAsync("DE", "123456789");
 
-        result.IsValid.Should().BeFalse();
-        result.Error.Should().Be("INVALID_INPUT");
+        result.IsValid.ShouldBeFalse();
+        result.Error.ShouldBe("INVALID_INPUT");
     }
 
     // --- Helpers ---

@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using VatBe.Models;
 using Xunit;
 
@@ -9,38 +9,38 @@ public sealed class VatBeExtensionsTests
     [Fact]
     public void IsBelgianEnterpriseNumber_Valid_ReturnsTrue()
     {
-        "0402.206.045".IsBelgianEnterpriseNumber().Should().BeTrue();
+        "0402.206.045".IsBelgianEnterpriseNumber().ShouldBeTrue();
     }
 
     [Fact]
     public void IsBelgianEnterpriseNumber_Invalid_ReturnsFalse()
     {
-        "not-a-number".IsBelgianEnterpriseNumber().Should().BeFalse();
+        "not-a-number".IsBelgianEnterpriseNumber().ShouldBeFalse();
     }
 
     [Fact]
     public void FormatAsEnterpriseNumber_FormatsCorrectly()
     {
-        "0402206045".FormatAsEnterpriseNumber().Should().Be("0402.206.045");
+        "0402206045".FormatAsEnterpriseNumber().ShouldBe("0402.206.045");
     }
 
     [Fact]
     public void FormatAsEnterpriseNumber_InvalidInput_Throws()
     {
         var act = () => "invalid".FormatAsEnterpriseNumber();
-        act.Should().Throw<FormatException>();
+        Should.Throw<FormatException>(act);
     }
 
     [Fact]
     public void IsBelgianVatNumber_Valid_ReturnsTrue()
     {
-        "BE0402.206.045".IsBelgianVatNumber().Should().BeTrue();
+        "BE0402.206.045".IsBelgianVatNumber().ShouldBeTrue();
     }
 
     [Fact]
     public void IsBelgianVatNumber_WithoutPrefix_ReturnsFalse()
     {
-        "0402.206.045".IsBelgianVatNumber().Should().BeFalse();
+        "0402.206.045".IsBelgianVatNumber().ShouldBeFalse();
     }
 
     [Fact]
@@ -48,8 +48,8 @@ public sealed class VatBeExtensionsTests
     {
         var calc = 100m.WithBelgianVat(VatRateCategory.Electronics);
 
-        calc.VatAmount.Should().Be(21m);
-        calc.AmountInclVat.Should().Be(121m);
+        calc.VatAmount.ShouldBe(21m);
+        calc.AmountInclVat.ShouldBe(121m);
     }
 
     [Fact]
@@ -57,14 +57,14 @@ public sealed class VatBeExtensionsTests
     {
         var calc = 121m.ExtractBelgianVat(VatRateCategory.Electronics);
 
-        calc.AmountExclVat.Should().Be(100m);
-        calc.VatAmount.Should().Be(21m);
+        calc.AmountExclVat.ShouldBe(100m);
+        calc.VatAmount.ShouldBe(21m);
     }
 
     [Fact]
     public void GetBelgianVatRate_ReturnsCorrectRate()
     {
-        VatRateCategory.BasicFood.GetBelgianVatRate().Should().Be(VatRate.Reduced);
-        VatRateCategory.Electronics.GetBelgianVatRate().Should().Be(VatRate.Standard);
+        VatRateCategory.BasicFood.GetBelgianVatRate().ShouldBe(VatRate.Reduced);
+        VatRateCategory.Electronics.GetBelgianVatRate().ShouldBe(VatRate.Standard);
     }
 }
