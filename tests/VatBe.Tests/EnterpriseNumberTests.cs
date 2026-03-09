@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using VatBe.Models;
 using Xunit;
 
@@ -19,8 +19,8 @@ public sealed class EnterpriseNumberTests
     {
         var result = EnterpriseNumber.TryParse(input, out var en);
 
-        result.Should().BeTrue();
-        en.Digits.Should().Be("0402206045");
+        result.ShouldBeTrue();
+        en.Digits.ShouldBe("0402206045");
     }
 
     [Theory]
@@ -33,7 +33,7 @@ public sealed class EnterpriseNumberTests
     public void TryParse_ValidNumbers_ReturnsTrue(string input)
     {
         var result = EnterpriseNumber.TryParse(input, out _);
-        result.Should().BeTrue();
+        result.ShouldBeTrue();
     }
 
     // --- Invalid numbers ---
@@ -51,29 +51,29 @@ public sealed class EnterpriseNumberTests
     public void TryParse_InvalidNumbers_ReturnsFalse(string? input)
     {
         var result = EnterpriseNumber.TryParse(input, out _);
-        result.Should().BeFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
     public void IsValid_DelegatesToTryParse()
     {
-        EnterpriseNumber.IsValid("0402.206.045").Should().BeTrue();
-        EnterpriseNumber.IsValid("0000000000").Should().BeFalse();
-        EnterpriseNumber.IsValid(null).Should().BeFalse();
+        EnterpriseNumber.IsValid("0402.206.045").ShouldBeTrue();
+        EnterpriseNumber.IsValid("0000000000").ShouldBeFalse();
+        EnterpriseNumber.IsValid(null).ShouldBeFalse();
     }
 
     [Fact]
     public void ToFormatted_ReturnsDotsFormat()
     {
         var en = EnterpriseNumber.Parse("0402206045");
-        en.ToFormatted().Should().Be("0402.206.045");
+        en.ToFormatted().ShouldBe("0402.206.045");
     }
 
     [Fact]
     public void ToString_ReturnsFormattedVersion()
     {
         var en = EnterpriseNumber.Parse("0402206045");
-        en.ToString().Should().Be("0402.206.045");
+        en.ToString().ShouldBe("0402.206.045");
     }
 
     [Fact]
@@ -82,16 +82,16 @@ public sealed class EnterpriseNumberTests
         var en = EnterpriseNumber.Parse("0402206045");
         var vat = en.ToVatNumber();
 
-        vat.CountryCode.Should().Be("BE");
-        vat.EnterpriseNumber.Should().Be(en);
-        vat.ToFormatted().Should().Be("BE 0402.206.045");
+        vat.CountryCode.ShouldBe("BE");
+        vat.EnterpriseNumber.ShouldBe(en);
+        vat.ToFormatted().ShouldBe("BE 0402.206.045");
     }
 
     [Fact]
     public void Parse_InvalidInput_ThrowsFormatException()
     {
         var act = () => EnterpriseNumber.Parse("not-a-number");
-        act.Should().Throw<FormatException>();
+        Should.Throw<FormatException>(act);
     }
 
     [Fact]
@@ -100,13 +100,13 @@ public sealed class EnterpriseNumberTests
         var a = EnterpriseNumber.Parse("0402.206.045");
         var b = EnterpriseNumber.Parse("BE0402206045");
 
-        a.Should().Be(b);
+        a.ShouldBe(b);
     }
 
     [Fact]
     public void Digits_AreTenCharactersLong()
     {
         var en = EnterpriseNumber.Parse("0123.456.749");
-        en.Digits.Should().HaveLength(10);
+        en.Digits.Length.ShouldBe(10);
     }
 }

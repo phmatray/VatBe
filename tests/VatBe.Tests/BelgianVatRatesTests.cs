@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using VatBe.Calculation;
 using VatBe.Models;
 using Xunit;
@@ -23,7 +23,7 @@ public sealed class BelgianVatRatesTests
     [InlineData(VatRateCategory.Alcohol, VatRate.Standard)]
     public void GetRate_ReturnsCorrectRateForCategory(VatRateCategory category, VatRate expectedRate)
     {
-        BelgianVatRates.GetRate(category).Should().Be(expectedRate);
+        BelgianVatRates.GetRate(category).ShouldBe(expectedRate);
     }
 
     [Theory]
@@ -34,23 +34,23 @@ public sealed class BelgianVatRatesTests
     public void GetRateDecimal_ReturnsCorrectDecimalFraction(VatRateCategory category, double expected)
     {
         var rate = BelgianVatRates.GetRateDecimal(category);
-        rate.Should().BeApproximately((decimal)expected, 0.0001m);
+        rate.ShouldBe((decimal)expected, 0.0001m);
     }
 
     [Fact]
     public void GetCategoriesForRate_Standard_ReturnsMultipleCategories()
     {
         var categories = BelgianVatRates.GetCategoriesForRate(VatRate.Standard).ToList();
-        categories.Should().Contain(VatRateCategory.Electronics);
-        categories.Should().Contain(VatRateCategory.Clothing);
-        categories.Should().Contain(VatRateCategory.Standard);
+        categories.ShouldContain(VatRateCategory.Electronics);
+        categories.ShouldContain(VatRateCategory.Clothing);
+        categories.ShouldContain(VatRateCategory.Standard);
     }
 
     [Fact]
     public void GetCategoriesForRate_Zero_ReturnsOnlyZeroCategories()
     {
         var categories = BelgianVatRates.GetCategoriesForRate(VatRate.Zero).ToList();
-        categories.Should().OnlyContain(c =>
+        categories.ShouldAllBe(c =>
             c == VatRateCategory.UsedGoods || c == VatRateCategory.ExportOutsideEU);
     }
 
@@ -59,7 +59,7 @@ public sealed class BelgianVatRatesTests
     {
         var allDefined = Enum.GetValues<VatRateCategory>();
         var covered = BelgianVatRates.AllRates.Keys;
-        covered.Should().Contain(allDefined, "every VatRateCategory must have a rate defined");
+        covered.ShouldContain(allDefined, "every VatRateCategory must have a rate defined");
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class BelgianVatRatesTests
         var validRates = new[] { 0, 6, 12, 21 };
         foreach (var rate in BelgianVatRates.AllRates.Values)
         {
-            validRates.Should().Contain((int)rate);
+            validRates.ShouldContain((int)rate);
         }
     }
 }
