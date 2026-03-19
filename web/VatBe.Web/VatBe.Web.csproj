@@ -10,4 +10,8 @@
     <ProjectReference Include="..\..\src\VatBe\VatBe.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="TheAppManager" />
+  </ItemGroup>
+
 </Project>
