@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\VatBe\VatBe.csproj" />
+    <ProjectReference Include="..\..\src\VatBe.Stripe\VatBe.Stripe.csproj" />
   </ItemGroup>
 
   <ItemGroup>

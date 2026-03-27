@@ -5,6 +5,8 @@
   <ItemGroup>
     <!-- Library -->
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.5" />
+    <!-- Stripe billing -->
+    <PackageVersion Include="Stripe.net" Version="47.3.0" />
     <!-- Test packages -->
     <PackageVersion Include="TheAppManager" Version="2.0.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />

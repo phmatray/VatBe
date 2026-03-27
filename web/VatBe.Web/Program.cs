@@ -7,5 +7,6 @@ AppManager.Start(args, modules =>
         .Add<DataProtectionModule>()
         .Add<BlazorModule>()
         .Add<VatBeModule>()
+        .Add<StripeModule>()
         .Add<HealthChecksModule>();
 });

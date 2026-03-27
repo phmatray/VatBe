@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/VatBe/VatBe.csproj" />
+    <Project Path="src/VatBe.Stripe/VatBe.Stripe.csproj" />
   </Folder>
   <Folder Name="/web/">
     <Project Path="web/VatBe.Web/VatBe.Web.csproj" />
