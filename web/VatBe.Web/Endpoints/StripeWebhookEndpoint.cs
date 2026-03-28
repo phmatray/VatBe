@@ -24,6 +24,7 @@ public static class StripeWebhookEndpoint
     private static async Task<IResult> HandleAsync(
         HttpContext context,
         [FromServices] IOptions<StripeSettings> settings,
+        [FromServices] ISubscriptionService subscriptionService,
         [FromServices] ILogger<Program> logger)
     {
         var json = await new StreamReader(context.Request.Body).ReadToEndAsync();
@@ -47,43 +48,67 @@ public static class StripeWebhookEndpoint
 
         logger.LogInformation("Received Stripe event: {EventType} ({EventId})", stripeEvent.Type, stripeEvent.Id);
 
-        switch (stripeEvent.Type)
+        try
         {
-            case EventTypes.CheckoutSessionCompleted:
-                // TODO Sprint 2: provision API key, send welcome email
-                var session = stripeEvent.Data.Object as global::Stripe.Checkout.Session;
-                logger.LogInformation(
-                    "Checkout completed: session={SessionId} customer={CustomerId} email={Email}",
-                    session?.Id, session?.CustomerId, session?.CustomerEmail);
-                break;
+            switch (stripeEvent.Type)
+            {
+                case EventTypes.CheckoutSessionCompleted:
+                    var session = stripeEvent.Data.Object as global::Stripe.Checkout.Session;
+                    if (session is not null)
+                    {
+                        await subscriptionService.ProvisionSubscriberAsync(
+                            session.CustomerId ?? string.Empty,
+                            session.CustomerEmail ?? string.Empty,
+                            session.Id);
+                    }
+                    break;
 
-            case EventTypes.CustomerSubscriptionCreated:
-            case EventTypes.CustomerSubscriptionUpdated:
-                // TODO Sprint 2: sync subscription status to DB
-                var subscription = stripeEvent.Data.Object as Subscription;
-                logger.LogInformation(
-                    "Subscription {EventType}: id={SubscriptionId} status={Status}",
-                    stripeEvent.Type, subscription?.Id, subscription?.Status);
-                break;
+                case EventTypes.CustomerSubscriptionCreated:
+                case EventTypes.CustomerSubscriptionUpdated:
+                    var subscription = stripeEvent.Data.Object as Subscription;
+                    if (subscription is not null)
+                    {
+                        var planNickname = subscription.Items?.Data?.FirstOrDefault()?.Plan?.Nickname;
+                        await subscriptionService.SyncSubscriptionAsync(
+                            subscription.Id,
+                            subscription.CustomerId,
+                            subscription.Status,
+                            planNickname);
+                    }
+                    break;
 
-            case EventTypes.CustomerSubscriptionDeleted:
-                // TODO Sprint 2: revoke API key, send offboarding email
-                var cancelledSub = stripeEvent.Data.Object as Subscription;
-                logger.LogInformation(
-                    "Subscription cancelled: id={SubscriptionId}", cancelledSub?.Id);
-                break;
+                case EventTypes.CustomerSubscriptionDeleted:
+                    var cancelledSub = stripeEvent.Data.Object as Subscription;
+                    if (cancelledSub is not null)
+                    {
+                        await subscriptionService.RevokeSubscriberAsync(
+                            cancelledSub.Id,
+                            cancelledSub.CustomerId);
+                    }
+                    break;
 
-            case EventTypes.InvoicePaymentFailed:
-                // TODO Sprint 2: send dunning email, grace period logic
-                var invoice = stripeEvent.Data.Object as Invoice;
-                logger.LogWarning(
-                    "Invoice payment failed: invoiceId={InvoiceId} customer={CustomerId}",
-                    invoice?.Id, invoice?.CustomerId);
-                break;
+                case EventTypes.InvoicePaymentFailed:
+                    var invoice = stripeEvent.Data.Object as Invoice;
+                    if (invoice is not null)
+                    {
+                        await subscriptionService.HandlePaymentFailureAsync(
+                            invoice.Id,
+                            invoice.CustomerId,
+                            (int)(invoice.AttemptCount ?? 1));
+                    }
+                    break;
 
-            default:
-                logger.LogDebug("Unhandled Stripe event type: {EventType}", stripeEvent.Type);
-                break;
+                default:
+                    logger.LogDebug("Unhandled Stripe event type: {EventType}", stripeEvent.Type);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log but return 200 — Stripe will retry on non-2xx, so we should only return errors
+            // for signature failures (above). For processing errors, log and investigate separately.
+            logger.LogError(ex, "Error processing Stripe event {EventType} ({EventId})",
+                stripeEvent.Type, stripeEvent.Id);
         }
 
         return Results.Ok(new { received = true });

@@ -18,6 +18,7 @@ public static class StripeServiceCollectionExtensions
     {
         services.Configure<StripeSettings>(configuration.GetSection(StripeSettings.SectionName));
         services.TryAddScoped<ICheckoutService, CheckoutService>();
+        services.TryAddScoped<ISubscriptionService, SubscriptionService>();
         return services;
     }
 }
