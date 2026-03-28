@@ -12,10 +12,12 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="Shouldly" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\VatBe\VatBe.csproj" />
+    <ProjectReference Include="..\..\src\VatBe.Stripe\VatBe.Stripe.csproj" />
   </ItemGroup>
 
 </Project>
