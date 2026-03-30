@@ -59,7 +59,8 @@ public sealed class BelgianVatRatesTests
     {
         var allDefined = Enum.GetValues<VatRateCategory>();
         var covered = BelgianVatRates.AllRates.Keys;
-        covered.ShouldContain(allDefined, "every VatRateCategory must have a rate defined");
+        foreach (var category in allDefined)
+            covered.ShouldContain(category, $"VatRateCategory.{category} must have a rate defined");
     }
 
     [Fact]

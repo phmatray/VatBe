@@ -94,7 +94,7 @@ public static class StripeWebhookEndpoint
                         await subscriptionService.HandlePaymentFailureAsync(
                             invoice.Id,
                             invoice.CustomerId,
-                            (int)(invoice.AttemptCount ?? 1L));
+                            (int)(invoice.AttemptCount > 0 ? invoice.AttemptCount : 1L));
                     }
                     break;
 

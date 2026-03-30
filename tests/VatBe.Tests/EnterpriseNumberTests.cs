@@ -90,7 +90,7 @@ public sealed class EnterpriseNumberTests
     [Fact]
     public void Parse_InvalidInput_ThrowsFormatException()
     {
-        var act = () => EnterpriseNumber.Parse("not-a-number");
+        Action act = () => EnterpriseNumber.Parse("not-a-number");
         Should.Throw<FormatException>(act);
     }
 

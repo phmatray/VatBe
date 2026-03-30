@@ -73,7 +73,7 @@ public sealed class VatNumberTests
     [Fact]
     public void Parse_InvalidInput_ThrowsFormatException()
     {
-        var act = () => VatNumber.Parse("not-a-vat-number");
+        Action act = () => VatNumber.Parse("not-a-vat-number");
         Should.Throw<FormatException>(act);
     }
 
