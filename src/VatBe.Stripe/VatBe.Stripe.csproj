@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>VatBe.Stripe</AssemblyName>
+    <RootNamespace>VatBe.Stripe</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Description>Stripe billing integration for VatBe — checkout sessions, webhooks, subscription management</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Stripe.net" />
+    <ProjectReference Include="..\VatBe\VatBe.csproj" />
+  </ItemGroup>
+
+</Project>

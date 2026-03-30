@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using VatBe.Calculation;
 using VatBe.Models;
 using Xunit;
@@ -14,11 +14,11 @@ public sealed class VatCalculatorTests
     {
         var result = VatCalculator.FromExclVat(100m, VatRateCategory.Electronics);
 
-        result.Rate.Should().Be(VatRate.Standard);
-        result.AmountExclVat.Should().Be(100m);
-        result.VatAmount.Should().Be(21m);
-        result.AmountInclVat.Should().Be(121m);
-        result.RatePercentage.Should().Be(21m);
+        result.Rate.ShouldBe(VatRate.Standard);
+        result.AmountExclVat.ShouldBe(100m);
+        result.VatAmount.ShouldBe(21m);
+        result.AmountInclVat.ShouldBe(121m);
+        result.RatePercentage.ShouldBe(21m);
     }
 
     [Fact]
@@ -26,10 +26,10 @@ public sealed class VatCalculatorTests
     {
         var result = VatCalculator.FromExclVat(100m, VatRateCategory.BasicFood);
 
-        result.Rate.Should().Be(VatRate.Reduced);
-        result.AmountExclVat.Should().Be(100m);
-        result.VatAmount.Should().Be(6m);
-        result.AmountInclVat.Should().Be(106m);
+        result.Rate.ShouldBe(VatRate.Reduced);
+        result.AmountExclVat.ShouldBe(100m);
+        result.VatAmount.ShouldBe(6m);
+        result.AmountInclVat.ShouldBe(106m);
     }
 
     [Fact]
@@ -37,9 +37,9 @@ public sealed class VatCalculatorTests
     {
         var result = VatCalculator.FromExclVat(100m, VatRateCategory.RestaurantFood);
 
-        result.Rate.Should().Be(VatRate.Intermediate);
-        result.VatAmount.Should().Be(12m);
-        result.AmountInclVat.Should().Be(112m);
+        result.Rate.ShouldBe(VatRate.Intermediate);
+        result.VatAmount.ShouldBe(12m);
+        result.AmountInclVat.ShouldBe(112m);
     }
 
     [Fact]
@@ -47,9 +47,9 @@ public sealed class VatCalculatorTests
     {
         var result = VatCalculator.FromExclVat(100m, VatRateCategory.ExportOutsideEU);
 
-        result.Rate.Should().Be(VatRate.Zero);
-        result.VatAmount.Should().Be(0m);
-        result.AmountInclVat.Should().Be(100m);
+        result.Rate.ShouldBe(VatRate.Zero);
+        result.VatAmount.ShouldBe(0m);
+        result.AmountInclVat.ShouldBe(100m);
     }
 
     [Fact]
@@ -58,15 +58,15 @@ public sealed class VatCalculatorTests
         // 33.33 * 21% = 6.9993 → rounds to 7.00
         var result = VatCalculator.FromExclVat(33.33m, VatRateCategory.Standard);
 
-        result.VatAmount.Should().Be(7.00m);
-        result.AmountInclVat.Should().Be(40.33m);
+        result.VatAmount.ShouldBe(7.00m);
+        result.AmountInclVat.ShouldBe(40.33m);
     }
 
     [Fact]
     public void FromExclVat_NegativeAmount_Throws()
     {
         var act = () => VatCalculator.FromExclVat(-10m, VatRateCategory.Standard);
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(act);
     }
 
     [Fact]
@@ -74,9 +74,9 @@ public sealed class VatCalculatorTests
     {
         var result = VatCalculator.FromExclVat(0m, VatRateCategory.Standard);
 
-        result.AmountExclVat.Should().Be(0m);
-        result.VatAmount.Should().Be(0m);
-        result.AmountInclVat.Should().Be(0m);
+        result.AmountExclVat.ShouldBe(0m);
+        result.VatAmount.ShouldBe(0m);
+        result.AmountInclVat.ShouldBe(0m);
     }
 
     // --- FromInclVat ---
@@ -87,9 +87,9 @@ public sealed class VatCalculatorTests
         // 121 incl 21% → excl = 100, vat = 21
         var result = VatCalculator.FromInclVat(121m, VatRateCategory.Electronics);
 
-        result.AmountInclVat.Should().Be(121m);
-        result.AmountExclVat.Should().Be(100m);
-        result.VatAmount.Should().Be(21m);
+        result.AmountInclVat.ShouldBe(121m);
+        result.AmountExclVat.ShouldBe(100m);
+        result.VatAmount.ShouldBe(21m);
     }
 
     [Fact]
@@ -98,15 +98,15 @@ public sealed class VatCalculatorTests
         // 106 incl 6% → excl = 100, vat = 6
         var result = VatCalculator.FromInclVat(106m, VatRateCategory.BasicFood);
 
-        result.AmountExclVat.Should().Be(100m);
-        result.VatAmount.Should().Be(6m);
+        result.AmountExclVat.ShouldBe(100m);
+        result.VatAmount.ShouldBe(6m);
     }
 
     [Fact]
     public void FromInclVat_NegativeAmount_Throws()
     {
         var act = () => VatCalculator.FromInclVat(-10m, VatRateCategory.Standard);
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(act);
     }
 
     // --- FromExclVatWithRate ---
@@ -116,9 +116,9 @@ public sealed class VatCalculatorTests
     {
         var result = VatCalculator.FromExclVatWithRate(200m, VatRate.Reduced);
 
-        result.Rate.Should().Be(VatRate.Reduced);
-        result.VatAmount.Should().Be(12m);
-        result.AmountInclVat.Should().Be(212m);
+        result.Rate.ShouldBe(VatRate.Reduced);
+        result.VatAmount.ShouldBe(12m);
+        result.AmountInclVat.ShouldBe(212m);
     }
 
     // --- CalculateInvoice ---
@@ -135,9 +135,9 @@ public sealed class VatCalculatorTests
 
         var totals = VatCalculator.CalculateInvoice(lines);
 
-        totals.TotalExclVat.Should().Be(1025m);
-        totals.TotalVat.Should().Be(1000m * 0.21m + 5m * 0.06m + 20m * 0.12m);
-        totals.VatByRate.Should().HaveCount(3);
+        totals.TotalExclVat.ShouldBe(1025m);
+        totals.TotalVat.ShouldBe(1000m * 0.21m + 5m * 0.06m + 20m * 0.12m);
+        totals.VatByRate.Count().ShouldBe(3);
     }
 
     [Fact]
@@ -151,9 +151,9 @@ public sealed class VatCalculatorTests
 
         var totals = VatCalculator.CalculateInvoice(lines);
 
-        totals.VatByRate.Should().HaveCount(1); // both grouped under 21%
-        totals.VatByRate[0].Rate.Should().Be(VatRate.Standard);
-        totals.VatByRate[0].BaseAmount.Should().Be(300m);
-        totals.VatByRate[0].VatAmount.Should().Be(63m);
+        totals.VatByRate.Count().ShouldBe(1); // both grouped under 21%
+        totals.VatByRate[0].Rate.ShouldBe(VatRate.Standard);
+        totals.VatByRate[0].BaseAmount.ShouldBe(300m);
+        totals.VatByRate[0].VatAmount.ShouldBe(63m);
     }
 }
