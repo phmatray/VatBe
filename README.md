@@ -1,3 +1,5 @@
+![VatBe banner](.github/banner.png)
+
 # VatBe 🇧🇪
 
 > Belgian VAT & enterprise number toolkit for .NET
