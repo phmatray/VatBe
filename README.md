@@ -2,6 +2,21 @@
 
 # VatBe 🇧🇪
 
+<!-- portfolio-toc:start -->
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Belgian VAT Rates (2026)](#belgian-vat-rates-2026)
+- [Tech Stack](#tech-stack)
+- [License](#license)
+- [Contributing](#contributing)
+
+<!-- portfolio-toc:end -->
+
+
 > Belgian VAT & enterprise number toolkit for .NET
 
 [![NuGet](https://img.shields.io/nuget/v/VatBe)](https://www.nuget.org/packages/VatBe/)
