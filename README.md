@@ -137,6 +137,20 @@ public class MyService(IViesClient vies)
 | **12%** | Restaurant food, coal, margarine, certain social housing |
 | **21%** | Standard — electronics, clothing, SaaS/digital services, alcohol, new real estate |
 
+<!-- portfolio-techstack:start -->
+
+## Tech Stack
+
+- **.NET 10**
+- Microsoft.Extensions.Http
+- xunit
+- xunit.runner.visualstudio
+- FluentAssertions
+- Moq
+- TheAppManager
+
+<!-- portfolio-techstack:end -->
+
 ## License
 
 MIT — see [LICENSE](LICENSE)
