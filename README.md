@@ -2,6 +2,21 @@
 
 # VatBe 🇧🇪
 
+<!-- portfolio-badges:start -->
+<!-- Identity -->
+[![phmatray - VatBe](https://img.shields.io/static/v1?label=phmatray&message=VatBe&color=blue&logo=github)](https://github.com/phmatray/VatBe)
+![Top language](https://img.shields.io/github/languages/top/phmatray/VatBe)
+[![Stars](https://img.shields.io/github/stars/phmatray/VatBe?style=social)](https://github.com/phmatray/VatBe/stargazers)
+[![Forks](https://img.shields.io/github/forks/phmatray/VatBe?style=social)](https://github.com/phmatray/VatBe/network/members)
+[![License](https://img.shields.io/github/license/phmatray/VatBe)](https://github.com/phmatray/VatBe/blob/HEAD/LICENSE)
+
+<!-- Activity -->
+[![Issues](https://img.shields.io/github/issues/phmatray/VatBe)](https://github.com/phmatray/VatBe/issues)
+[![Pull requests](https://img.shields.io/github/issues-pr/phmatray/VatBe)](https://github.com/phmatray/VatBe/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/phmatray/VatBe)](https://github.com/phmatray/VatBe/commits)
+<!-- portfolio-badges:end -->
+
+
 <!-- portfolio-toc:start -->
 
 ## Table of Contents
